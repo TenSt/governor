@@ -33,13 +33,13 @@ type task struct {
 
 func sortTasks(s []task) []task {
 
-	fmt.Println(s)
+	// fmt.Println(s)
 
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
 
-	fmt.Println(s)
+	// fmt.Println(s)
 
 	return s
 }
@@ -84,6 +84,13 @@ func dropHandler(w http.ResponseWriter, r *http.Request) {
 
 	dropMongo()
 	parseTasks()
+
+}
+
+func tasksHandler(w http.ResponseWriter, r *http.Request) {
+
+	parseTasks()
+	http.ServeFile(w, r, "tasks.html")
 
 }
 
@@ -189,6 +196,7 @@ func main() {
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/index.html", wasmHandler)
 	mux.HandleFunc("/drop", dropHandler)
+	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
