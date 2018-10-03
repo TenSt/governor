@@ -54,6 +54,51 @@ func mongoWrite(user string, action string) {
 
 }
 
+func dropMongo() {
+	client, err := mongo.NewClient("mongodb://mongo:27017")
+	err = client.Connect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := client.Database("governor").Collection("tasks")
+
+	err = collection.Drop(context.Background(), nil)
+
+}
+
+func dropHandler(w http.ResponseWriter, r *http.Request) {
+
+	dropMongo()
+	parseTasks()
+
+	// switch r.Method {
+	// case "GET":
+	// 	parseTasks()
+	// 	http.ServeFile(w, r, "index.html")
+	// case "POST":
+
+	// 	// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
+	// 	if err := r.ParseForm(); err != nil {
+	// 		fmt.Fprintf(w, "ParseForm() err: %v", err)
+	// 		return
+	// 	}
+	// 	//fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
+	// 	u := r.FormValue("user")
+	// 	a := r.FormValue("action")
+
+	// 	mongoWrite(u, a)
+
+	// 	//readMongo()
+
+	// 	parseTasks()
+
+	// default:
+	// 	fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	// }
+
+}
+
 func readMongo() []task {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	err = client.Connect(context.TODO())
@@ -153,6 +198,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/index.html", wasmHandler)
+	mux.HandleFunc("/drop", dropHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
