@@ -31,6 +31,19 @@ type task struct {
 	State  string            `json:"state" bson:"state"`
 }
 
+func sortTasks(s []task) []task {
+
+	fmt.Println(s)
+
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+
+	fmt.Println(s)
+
+	return s
+}
+
 func mongoWrite(user string, action string) {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	if err != nil {
@@ -71,31 +84,6 @@ func dropHandler(w http.ResponseWriter, r *http.Request) {
 
 	dropMongo()
 	parseTasks()
-
-	// switch r.Method {
-	// case "GET":
-	// 	parseTasks()
-	// 	http.ServeFile(w, r, "index.html")
-	// case "POST":
-
-	// 	// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
-	// 	if err := r.ParseForm(); err != nil {
-	// 		fmt.Fprintf(w, "ParseForm() err: %v", err)
-	// 		return
-	// 	}
-	// 	//fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
-	// 	u := r.FormValue("user")
-	// 	a := r.FormValue("action")
-
-	// 	mongoWrite(u, a)
-
-	// 	//readMongo()
-
-	// 	parseTasks()
-
-	// default:
-	// 	fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
-	// }
 
 }
 
@@ -144,7 +132,9 @@ func parseTasks() {
 	}
 
 	// execute template
+	//tasks := readMongo()
 	tasks := readMongo()
+	tasks = sortTasks(tasks)
 
 	f, err := os.Create("tasks.html")
 	if err != nil {
