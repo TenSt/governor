@@ -55,7 +55,7 @@ func mongoWrite(user string, action string) {
 }
 
 func readMongo() []task {
-	client, err := mongo.NewClient("mongodb://localhost:27017")
+	client, err := mongo.NewClient("mongodb://mongo:27017")
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
