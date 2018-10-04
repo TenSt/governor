@@ -26,6 +26,7 @@ func check(e error) {
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
 	ID     objectid.ObjectID `json:"id" bson:"_id"`
+	Number int64             `json:"number" bson:"number"`
 	User   string            `json:"user" bson:"user"`
 	Action string            `json:"action" bson:"action"`
 	State  string            `json:"state" bson:"state"`
@@ -56,7 +57,9 @@ func mongoWrite(user string, action string) {
 
 	collection := client.Database("governor").Collection("tasks")
 
-	newItemDoc := bson.NewDocument(bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"))
+	id, _ := collection.Count(context.Background(), nil)
+
+	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"))
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
 
 	if err != nil {
@@ -127,8 +130,9 @@ func readMongo() []task {
 		log.Fatal(err)
 	}
 
-	return tasks
 	//	log.Print(tasks)
+	return tasks
+
 }
 
 func parseTasks() {

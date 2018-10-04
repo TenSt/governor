@@ -27,13 +27,14 @@ th {
 
 	<table border="1">
 	  <tr>
+    <th>#</th>
     <th>Username</th>
     <th>Action</th>
     <th>State</th>
   </tr>
     {{ range . }}
-					<tr> 	
-						
+				<tr> 	
+					  <td>{{ .Number }}</td>	
 					  <td>{{ .User }}</td>
 					  <td>{{ .Action }}</td> 
 					  <td>{{ .State }}</td>
