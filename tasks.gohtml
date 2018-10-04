@@ -37,7 +37,14 @@ th {
 					  <td>{{ .Number }}</td>	
 					  <td>{{ .User }}</td>
 					  <td>{{ .Action }}</td> 
-					  <td>{{ .State }}</td>
+					  
+                      <td>
+                      {{ if (eq .State  "active") }}
+                        <font color="red">{{ .State }}</font>
+                      {{ else }}
+                        <font color="green">{{ .State }}</font>
+                      {{ end }}
+                      </td>
 				
 				</tr>
     {{ end }}	
