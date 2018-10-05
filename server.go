@@ -67,7 +67,7 @@ func mongoWrite(user string, action string, email string) {
 		log.Fatal(err)
 	}
 
-	defer client.Disconnect(nil)
+	//	defer client.Disconnect(nil)
 
 	// id := res.InsertedID
 	// log.Printf(id.(string))
@@ -85,7 +85,7 @@ func dropMongo() {
 
 	err = collection.Drop(context.Background(), nil)
 
-	defer client.Disconnect(nil)
+	//defer client.Disconnect(nil)
 
 }
 
