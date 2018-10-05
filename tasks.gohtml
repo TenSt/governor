@@ -40,10 +40,13 @@ th {
 					  
                       <td>
                       {{ if (eq .State  "active") }}
-                        <font color="red">{{ .State }}</font>
+                        <font color="navy"> {{ .State }}
+                      {{ else if (eq .State "error") }}
+                        <font color="red"> {{ .State }}
                       {{ else }}
-                        <font color="green">{{ .State }}</font>
+                        <font color="teal">{{ .State }}
                       {{ end }}
+                      </font>
                       </td>
 				
 				</tr>
