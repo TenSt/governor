@@ -66,6 +66,9 @@ func mongoWrite(user string, action string, email string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer client.Disconnect(nil)
+
 	// id := res.InsertedID
 	// log.Printf(id.(string))
 
@@ -81,6 +84,8 @@ func dropMongo() {
 	collection := client.Database("governor").Collection("tasks")
 
 	err = collection.Drop(context.Background(), nil)
+
+	defer client.Disconnect(nil)
 
 }
 
@@ -131,6 +136,7 @@ func readMongo() []task {
 		log.Fatal(err)
 	}
 
+	defer client.Disconnect(nil)
 	//	log.Print(tasks)
 	return tasks
 

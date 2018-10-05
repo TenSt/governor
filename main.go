@@ -39,6 +39,6 @@ func main() {
 	//t.SetAttribute("target", "tasks.html")
 
 	logger := log.New((*writer)(t), "", log.LstdFlags)
-	logger.Print("new task is ready, user: " + u + ", action: " + a + "email: " + e)
+	logger.Print("new task is ready, user: " + u + ", action: " + a + ", email: " + e)
 
 }
