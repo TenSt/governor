@@ -136,7 +136,7 @@ func readMongo() []task {
 		log.Fatal(err)
 	}
 
-	//defer client.Disconnect(nil)
+	defer client.Disconnect(context.Background())
 	//	log.Print(tasks)
 	return tasks
 
