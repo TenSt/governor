@@ -67,7 +67,7 @@ func mongoWrite(user string, action string, email string) {
 		log.Fatal(err)
 	}
 
-	//	defer client.Disconnect(nil)
+	defer client.Disconnect(context.Background())
 
 	// id := res.InsertedID
 	// log.Printf(id.(string))
