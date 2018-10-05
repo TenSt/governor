@@ -30,6 +30,7 @@ type task struct {
 	User   string            `json:"user" bson:"user"`
 	Action string            `json:"action" bson:"action"`
 	State  string            `json:"state" bson:"state"`
+	Email  string            `json:"email" bson:"email"`
 }
 
 func sortTasks(s []task) []task {
@@ -45,7 +46,7 @@ func sortTasks(s []task) []task {
 	return s
 }
 
-func mongoWrite(user string, action string) {
+func mongoWrite(user string, action string, email string) {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +60,7 @@ func mongoWrite(user string, action string) {
 
 	id, _ := collection.Count(context.Background(), nil)
 
-	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"))
+	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email))
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
 
 	if err != nil {
@@ -175,8 +176,9 @@ func wasmHandler(w http.ResponseWriter, r *http.Request) {
 		//fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
 		u := r.FormValue("user")
 		a := r.FormValue("action")
+		e := r.FormValue("email")
 
-		mongoWrite(u, a)
+		mongoWrite(u, a, e)
 
 		//readMongo()
 

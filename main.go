@@ -27,9 +27,10 @@ func main() {
 
 	u := js.Global().Get("document").Call("getElementById", "user").Get("value").String()
 	a := js.Global().Get("document").Call("getElementById", "action").Get("value").String()
+	e := js.Global().Get("document").Call("getElementById", "email").Get("value").String()
 
 	_, err := http.PostForm("./index.html",
-		url.Values{"user": {u}, "action": {a}})
+		url.Values{"user": {u}, "action": {a}, "email": {e}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,6 +39,6 @@ func main() {
 	//t.SetAttribute("target", "tasks.html")
 
 	logger := log.New((*writer)(t), "", log.LstdFlags)
-	logger.Print("new task is ready, user: " + u + ", action: " + a)
+	logger.Print("new task is ready, user: " + u + ", action: " + a + "email: " + e)
 
 }
