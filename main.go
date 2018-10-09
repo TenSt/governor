@@ -29,15 +29,15 @@ func parse(s string) (string, string, string) {
 	f := strings.Fields(s)
 	for i, word := range f {
 		if word == "user" || word == "username" || word == "username:" || word == "user:" || word == "login:" || word == "login" || word == "name:" || word == "name" || word == "account" || word == "account:" {
-			u = strings.TrimRight(f[i+1], ".,!:")
+			u = strings.TrimRight(f[i+1], ".,!:?")
 		}
 
 		if word == "reset" || word == "add" || word == "delete" || word == "create" || word == "disable" || word == "remove" {
-			a = strings.TrimRight(f[i], ".,!:")
+			a = strings.TrimRight(f[i], ".,!:?")
 		}
 
 		if strings.Contains(word, "@") {
-			e = f[i]
+			e = strings.TrimRight(f[i], ".,!:?")
 		}
 
 	}
@@ -73,8 +73,8 @@ func main() {
 			url.Values{"user": {u}, "action": {a}, "email": {e}})
 		if err != nil {
 			log.Fatal(err)
-			logger.Print("new task is ready, user: " + u + ", action: " + a + ", email: " + e)
 		}
+		logger.Print("new task is ready, user: " + u + ", action: " + a + ", email: " + e)
 	}
 
 	//t.SetAttribute("target", "main.go")
