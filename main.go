@@ -29,7 +29,9 @@ func parse(s string) (string, string, string) {
 	f := strings.Fields(s)
 	for i, word := range f {
 		if word == "user" || word == "username" || word == "username:" || word == "user:" || word == "login:" || word == "login" || word == "name:" || word == "name" || word == "account" || word == "account:" {
-			u = strings.TrimRight(f[i+1], ".,!:?")
+			if f[i+1] != "for" {
+				u = strings.TrimRight(f[i+1], ".,!:?")
+			}
 		}
 
 		if word == "reset" || word == "add" || word == "delete" || word == "create" || word == "disable" || word == "remove" {
