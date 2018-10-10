@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/smtp"
 	"os"
@@ -156,10 +157,25 @@ func changeStatus(Ticket task, state string) {
 	}
 
 }
+func readFile(filename string) string {
+
+	bs, err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		//os.Exit(1)
+	}
+
+	pass := string(bs)
+
+	return pass
+
+}
 
 func send(body string, subject string, email string) {
+
 	from := "governorandclerk@gmail.com"
-	pass := "bYqfe4rRGV35sko5jIGa"
+	pass := readFile("pass.txt")
 	to := email
 
 	msg := "From: " + from + "\n" +
