@@ -116,7 +116,7 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(string(body))
 
-	d, _ := jsonparser.GetUnsafeString(body, "issue", "description")
+	d, _ := jsonparser.GetUnsafeString(body, "issue", "fields", "description")
 
 	//description, _ := data["description"].(string)
 	log.Println(d)
