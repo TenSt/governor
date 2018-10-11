@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -12,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/buger/jsonparser"
 
 	//"github.com/rs/xid"
 
@@ -115,16 +116,12 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(string(body))
 
-	data := make(map[string]interface{})
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		panic(err)
-	}
+	d, _ := jsonparser.GetUnsafeString(body, "issue", "description")
 
-	description, _ := data["description"].(string)
-	log.Println(description)
+	//description, _ := data["description"].(string)
+	log.Println(d)
 
-	u, a, e := parseDescription(description)
+	u, a, e := parseDescription(d)
 	log.Println(u + " " + a + " " + e)
 
 	_, err = http.PostForm("http://governor.verf.io/index.html",

@@ -8,6 +8,8 @@ WORKDIR /app
 RUN go get -u  "github.com/mongodb/mongo-go-driver/bson"
 ##RUN go get -u	"github.com/mongodb/mongo-go-driver/bson/objectid"
 RUN go get -u	"github.com/mongodb/mongo-go-driver/mongo"
+RUN go get -u   "github.com/buger/jsonparser"
+
 
 RUN CGO_ENABLED=1 GOOS=js GOARCH=wasm go get -u "github.com/dennwc/dom"
 RUN CGO_ENABLED=1 GOOS=js GOARCH=wasm go get -u "syscall/js" 
