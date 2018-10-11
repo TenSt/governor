@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -106,22 +107,20 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 
 func jiraHandler(w http.ResponseWriter, r *http.Request) {
 
-	//http.ServeFile(w, r, "tasks.html")
-
-	// decoder := json.NewDecoder(r.Body)
-	// var t test_struct
-	// err := decoder.Decode(&t)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// log.Println(t.Test)
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		panic(err)
 	}
 	log.Println(string(body))
 
+	data := make(map[string]interface{})
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		panic(err)
+	}
+
+	description, _ := data["description"]
+	log.Println(description)
 }
 
 func readMongo() []task {
