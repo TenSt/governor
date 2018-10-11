@@ -152,15 +152,20 @@ func servicenowHandler(w http.ResponseWriter, r *http.Request) {
 	// //description, _ := data["description"].(string)
 	// log.Println(d)
 
-	// u, a, e := parseDescription(d)
+	f := strings.Fields(string(body))
+
+	u, a, e := parseDescription(string(body))
+	s := "servicenow"
+	si := f[0]
+
 	// log.Println(u + " " + a + " " + e)
 
-	// _, err = http.PostForm("http://governor.verf.io/index.html",
-	// 	url.Values{"user": {u}, "action": {a}, "email": {e}, "source": {s}, "sourceid": {si}})
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
+	_, err = http.PostForm("http://governor.verf.io/index.html",
+		url.Values{"user": {u}, "action": {a}, "email": {e}, "source": {s}, "sourceid": {si}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
 }
 
 func readMongo() []task {
