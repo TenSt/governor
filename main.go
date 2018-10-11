@@ -79,7 +79,7 @@ func main() {
 		logger.Print("task is invalid please specify all the values, user: " + u + ", action: " + a + ", email: " + e)
 	} else {
 		_, err := http.PostForm("./index.html",
-			url.Values{"user": {u}, "action": {a}, "email": {e}})
+			url.Values{"user": {u}, "action": {a}, "email": {e}, "source": {"governor"}, "sourceid": {"-"}})
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -30,12 +30,14 @@ func check(e error) {
 // Task is task
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
-	ID     objectid.ObjectID `json:"id" bson:"_id"`
-	Number int64             `json:"number" bson:"number"`
-	User   string            `json:"user" bson:"user"`
-	Action string            `json:"action" bson:"action"`
-	State  string            `json:"state" bson:"state"`
-	Email  string            `json:"email" bson:"email"`
+	ID       objectid.ObjectID `json:"id" bson:"_id"`
+	Number   int64             `json:"number" bson:"number"`
+	Source   string            `json:"source" bson:"source"`
+	SourceID string            `json:"sourceid" bson:"sourceid"`
+	User     string            `json:"user" bson:"user"`
+	Action   string            `json:"action" bson:"action"`
+	State    string            `json:"state" bson:"state"`
+	Email    string            `json:"email" bson:"email"`
 }
 
 func sortTasks(s []task) []task {
@@ -51,7 +53,7 @@ func sortTasks(s []task) []task {
 	return s
 }
 
-func mongoWrite(user string, action string, email string) {
+func mongoWrite(user string, action string, email string, source string, sourceid string) {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	if err != nil {
 		log.Fatal(err)
@@ -65,7 +67,7 @@ func mongoWrite(user string, action string, email string) {
 
 	id, _ := collection.Count(context.Background(), nil)
 
-	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email))
+	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email), bson.EC.String("source", source), bson.EC.String("sourceid", sourceid))
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
 
 	if err != nil {
@@ -117,6 +119,8 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(string(body))
 
 	d, _ := jsonparser.GetUnsafeString(body, "issue", "fields", "description")
+	s := "jira"
+	si, _ := jsonparser.GetUnsafeString(body, "issue", "key")
 
 	//description, _ := data["description"].(string)
 	log.Println(d)
@@ -125,7 +129,7 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(u + " " + a + " " + e)
 
 	_, err = http.PostForm("http://governor.verf.io/index.html",
-		url.Values{"user": {u}, "action": {a}, "email": {e}})
+		url.Values{"user": {u}, "action": {a}, "email": {e}, "source": {s}, "sourceid": {si}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -249,8 +253,10 @@ func wasmHandler(w http.ResponseWriter, r *http.Request) {
 		u := r.FormValue("user")
 		a := r.FormValue("action")
 		e := r.FormValue("email")
+		s := r.FormValue("source")
+		si := r.FormValue("sourceid")
 
-		mongoWrite(u, a, e)
+		mongoWrite(u, a, e, s, si)
 
 		//readMongo()
 
