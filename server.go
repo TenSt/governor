@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -100,6 +101,26 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 
 	parseTasks()
 	http.ServeFile(w, r, "tasks.html")
+
+}
+
+func jiraHandler(w http.ResponseWriter, r *http.Request) {
+
+	//http.ServeFile(w, r, "tasks.html")
+
+	// decoder := json.NewDecoder(r.Body)
+	// var t test_struct
+	// err := decoder.Decode(&t)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// log.Println(t.Test)
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(string(body))
 
 }
 
@@ -208,7 +229,9 @@ func main() {
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/index.html", wasmHandler)
 	mux.HandleFunc("/drop", dropHandler)
+	mux.HandleFunc("/webhooks/jira", jiraHandler)
 	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
+
 }
