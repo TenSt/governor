@@ -189,7 +189,19 @@ func parseDescription(s string) (string, string, string) {
 		}
 
 		if strings.Contains(word, "@") {
-			e = strings.TrimRight(f[i], ".,!:?")
+			// if strings.Contains(word, "|mailto:") {
+			// 	e = (strings.SplitAfter(f[i], "|"))[0]
+			// 	e = strings.Trim(f[i], ".,!:?]")
+			// } else {
+			// 	e = strings.TrimRight(f[i], ".,!:?]")
+			// }
+			if strings.Contains(word, "|") {
+				e = (strings.SplitAfter(f[i], "|"))[0]
+				e = strings.Trim(e, "[].,!:?]|")
+			} else {
+				e = strings.Trim(f[i], "[].,!:?]")
+			}
+
 		}
 
 	}
