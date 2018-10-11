@@ -8,8 +8,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	//"github.com/rs/xid"
 
@@ -119,8 +121,18 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	description, _ := data["description"]
+	description, _ := data["description"].(string)
 	log.Println(description)
+
+	u, a, e := parseDescription(description)
+	log.Println(u + " " + a + " " + e)
+
+	_, err = http.PostForm("http://governor.verf.io/index.html",
+		url.Values{"user": {u}, "action": {a}, "email": {e}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
 }
 
 func readMongo() []task {
@@ -160,6 +172,31 @@ func readMongo() []task {
 	//	log.Print(tasks)
 	return tasks
 
+}
+
+func parseDescription(s string) (string, string, string) {
+	s = strings.ToLower(s)
+
+	var u, a, e string
+
+	f := strings.Fields(s)
+	for i, word := range f {
+		if word == "user" || word == "username" || word == "username:" || word == "user:" || word == "login:" || word == "login" || word == "name:" || word == "name" || word == "account" || word == "account:" {
+			if f[i+1] != "for" {
+				u = strings.TrimRight(f[i+1], ".,!:?")
+			}
+		}
+
+		if word == "reset" || word == "add" || word == "delete" || word == "create" || word == "disable" || word == "remove" {
+			a = strings.TrimRight(f[i], ".,!:?")
+		}
+
+		if strings.Contains(word, "@") {
+			e = strings.TrimRight(f[i], ".,!:?")
+		}
+
+	}
+	return u, a, e
 }
 
 func parseTasks() {
