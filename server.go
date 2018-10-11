@@ -136,6 +136,33 @@ func jiraHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
 }
 
+func servicenowHandler(w http.ResponseWriter, r *http.Request) {
+
+	log.Println("servicenow request")
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(string(body))
+
+	// d, _ := jsonparser.GetUnsafeString(body, "issue", "fields", "description")
+	// s := "jira"
+	// si, _ := jsonparser.GetUnsafeString(body, "issue", "key")
+
+	// //description, _ := data["description"].(string)
+	// log.Println(d)
+
+	// u, a, e := parseDescription(d)
+	// log.Println(u + " " + a + " " + e)
+
+	// _, err = http.PostForm("http://governor.verf.io/index.html",
+	// 	url.Values{"user": {u}, "action": {a}, "email": {e}, "source": {s}, "sourceid": {si}})
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
+}
+
 func readMongo() []task {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	err = client.Connect(context.TODO())
@@ -281,6 +308,7 @@ func main() {
 	mux.HandleFunc("/index.html", wasmHandler)
 	mux.HandleFunc("/drop", dropHandler)
 	mux.HandleFunc("/webhooks/jira", jiraHandler)
+	mux.HandleFunc("/webhooks/servicenow", servicenowHandler)
 	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
