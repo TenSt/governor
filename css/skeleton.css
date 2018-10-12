@@ -360,7 +360,7 @@ form {
 /* Utilities
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .u-full-width {
-  width: 50%;
+  width: 80%;
   box-sizing: border-box; }
 .u-max-full-width {
   max-width: 100%;
