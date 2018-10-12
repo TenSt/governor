@@ -4,28 +4,11 @@
     <meta charset="UTF-8" http-equiv="refresh" content="10">
 </head> 
     <title>Document</title>
-	<style>
-table {
-    border-collapse: collapse;
-    width: 55%;
-}
 
-th, td {
-    text-align: left;
-    padding: 8px;
-}
-
-tr:nth-child(even){background-color: #f2f2f2}
-
-th {
-    background-color: #4CAF50;
-    color: white;
-}
-</style>
 </head>
 <body>
 
-	<table border="1">
+	<table class="u-full-width">
 	  <tr>
     <th>#</th>
     <th>Source</th>
@@ -35,7 +18,7 @@ th {
     <th>State</th>
   </tr>
     {{ range . }}
-				<tr> 	
+				<tr>
 					  <td>{{ .Number }}</td>	
             <td>{{ .Source }}</td>
             <td>{{ .SourceID }}</td>
