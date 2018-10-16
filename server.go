@@ -311,7 +311,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/index.html", wasmHandler)
-	mux.HandleFunc("/drop", dropHandler)
+	//mux.HandleFunc("/drop", dropHandler)
 	mux.HandleFunc("/webhooks/jira", jiraHandler)
 	mux.HandleFunc("/webhooks/servicenow", servicenowHandler)
 	mux.HandleFunc("/tasks.html", tasksHandler)
