@@ -171,16 +171,38 @@ func servicenowHandler(w http.ResponseWriter, r *http.Request) {
 
 func exposeHandler(w http.ResponseWriter, r *http.Request) {
 
+	p := strings.Split(r.URL.Path, "/")
+
 	t := readMongo()
 
-	j, err := json.Marshal(t)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	if p[3] != "" {
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(j)
+		for _, task := range t {
+			// var j []byte
+			id := `ObjectID("` + p[3] + `")`
+			if (task.ID).String() == id {
+				j, err := json.Marshal(task)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(j)
+
+			}
+		}
+
+	} else {
+
+		j, err := json.Marshal(t)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(j)
+	}
 
 }
 
@@ -330,7 +352,7 @@ func main() {
 	//mux.HandleFunc("/drop", dropHandler)
 	mux.HandleFunc("/webhooks/jira", jiraHandler)
 	mux.HandleFunc("/webhooks/servicenow", servicenowHandler)
-	mux.HandleFunc("/api/tasks", exposeHandler)
+	mux.HandleFunc("/api/tasks/", exposeHandler)
 	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
