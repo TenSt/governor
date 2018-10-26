@@ -136,6 +136,7 @@ func run(cmd *exec.Cmd, ticket *task, password string) {
 		fmt.Println("Done")
 	}
 }
+
 func changeStatus(ticket *task, state string) {
 	println("changeStatus :", state)
 	ticket.State = state
