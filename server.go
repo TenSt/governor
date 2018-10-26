@@ -169,39 +169,68 @@ func servicenowHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("new task sent, user: " + u + ", action: " + a + ", email: " + e)
 }
 
-func exposeHandler(w http.ResponseWriter, r *http.Request) {
+func usersHandler(w http.ResponseWriter, r *http.Request) {
 
 	p := strings.Split(r.URL.Path, "/")
 
 	t := readMongo()
 
-	if p[3] != "" {
+	switch r.Method {
 
-		for _, task := range t {
-			// var j []byte
-			id := `ObjectID("` + p[3] + `")`
-			if (task.ID).String() == id {
-				j, err := json.Marshal(task)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
+	case "GET":
+		if p[3] != "" {
+			for _, task := range t {
+				// var j []byte
+				id := `ObjectID("` + p[3] + `")`
+				if (task.ID).String() == id {
+					j, err := json.Marshal(task)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					w.Header().Set("Content-Type", "application/json")
+					w.Write(j)
+
 				}
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(j)
-
 			}
+
+		} else {
+
+			j, err := json.Marshal(t)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(j)
 		}
 
-	} else {
-
-		j, err := json.Marshal(t)
+	case "POST":
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			panic(err)
+		}
+		log.Println(string(body))
+		var t task
+		err = json.Unmarshal(body, &t)
+		if err != nil {
+			panic(err)
+		}
+		log.Println(t)
+
+		client, err := mongo.NewClient("mongodb://mongo:27017")
+		err = client.Connect(context.TODO())
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(j)
+		collection := client.Database("governor").Collection("tasks")
+		doc, err := bson.Marshal(t)
+		filter := bson.NewDocument(bson.EC.ObjectID("_id", t.ID))
+		_, err = collection.ReplaceOne(context.Background(), filter, doc)
+
+	default:
 	}
 
 }
@@ -352,7 +381,7 @@ func main() {
 	//mux.HandleFunc("/drop", dropHandler)
 	mux.HandleFunc("/webhooks/jira", jiraHandler)
 	mux.HandleFunc("/webhooks/servicenow", servicenowHandler)
-	mux.HandleFunc("/api/tasks/", exposeHandler)
+	mux.HandleFunc("/api/users/", usersHandler)
 	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
