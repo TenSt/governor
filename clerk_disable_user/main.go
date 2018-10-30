@@ -10,10 +10,12 @@ import (
 	"net/smtp"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
 const urlUsers string = "http://governor.verf.io/api/users/"
+const urlAuth string = "https://verfio.auth0.com/oauth/token"
 
 var myClient = &http.Client{Timeout: 10 * time.Second}
 
@@ -66,7 +68,10 @@ func run(cmd *exec.Cmd, ticket *task) {
 
 func getTickets(status string, action string) *[]task {
 
-	resp, err := myClient.Get(urlUsers)
+	bearer := auth()
+	req, _ := http.NewRequest("GET", urlUsers, nil)
+	req.Header.Add("authorization", bearer)
+	resp, err := myClient.Do(req)
 	if err != nil {
 		println("Error:", err)
 	}
@@ -151,4 +156,31 @@ func disableUser(ticket *task) {
 	println("Login: ", ticket.User)
 
 	run(exec.Command("PowerShell", "-Command", "Disable-ADAccount", "-Identity "+ticket.User), ticket)
+}
+
+func auth() string {
+
+	payload := strings.NewReader("{\"grant_type\":\"client_credentials\",\"client_id\": \"lIJmNudGywMs2JPzhayxCvTvnxb2YnRO\",\"client_secret\": \"IvqFrrtetMVRnj_zahi7nvBkgjolFM5xzTCPVbDyoFW8YmmqLUMB-vw2dHyyy-oG\",\"audience\": \"https://governor.verf.io/api\"}")
+
+	req, err := http.NewRequest("POST", urlAuth, payload)
+	if err != nil {
+		log.Printf("Error creating POST request: %s", err)
+	}
+
+	req.Header.Add("content-type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Error sending POST request: %s", err)
+	}
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	token := (strings.Split(string(body), ":"))[1]
+	token = strings.Trim((strings.Split(token, ","))[0], "\"")
+	fmt.Println(token)
+	bearer := "Bearer " + token
+
+	return bearer
 }
