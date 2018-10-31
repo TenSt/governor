@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -17,15 +18,68 @@ import (
 
 	//"github.com/rs/xid"
 
+	"github.com/auth0/go-jwt-middleware"
+	"github.com/codegangsta/negroni"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/bson/objectid"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
+func getPemCert(token *jwt.Token) (string, error) {
+	cert := ""
+	resp, err := http.Get("https://verfio.auth0.com/.well-known/jwks.json")
+
+	if err != nil {
+		return cert, err
+	}
+	defer resp.Body.Close()
+
+	var jwks = Jwks{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
+
+	if err != nil {
+		return cert, err
+	}
+
+	for k, _ := range jwks.Keys {
+		if token.Header["kid"] == jwks.Keys[k].Kid {
+			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
+		}
+	}
+
+	if cert == "" {
+		err := errors.New("Unable to find appropriate key")
+		return cert, err
+	}
+
+	return cert, nil
+}
+
 func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+//Response struct for auth0
+type Response struct {
+	Message string `json:"message"`
+}
+
+//Jwks struct for auth0
+type Jwks struct {
+	Keys []JSONWebKeys `json:"keys"`
+}
+
+//JSONWebKeys struct for auth0
+type JSONWebKeys struct {
+	Kty string   `json:"kty"`
+	Kid string   `json:"kid"`
+	Use string   `json:"use"`
+	N   string   `json:"n"`
+	E   string   `json:"e"`
+	X5c []string `json:"x5c"`
 }
 
 // Task is task
@@ -369,6 +423,47 @@ func wasmHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	//
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Print("Error loading .env file")
+	// }
+
+	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			// Verify 'aud' claim
+			//aud := os.Getenv("AUTH0_AUDIENCE")
+			aud := "https://governor.verf.io/api"
+			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
+			if !checkAud {
+				return token, errors.New("Invalid audience")
+			}
+			// Verify 'iss' claim
+			//iss := "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
+			iss := "https://verfio.auth0.com/"
+			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
+			if !checkIss {
+				return token, errors.New("Invalid issuer")
+			}
+
+			cert, err := getPemCert(token)
+			if err != nil {
+				panic(err.Error())
+			}
+
+			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+			return result, nil
+		},
+		SigningMethod: jwt.SigningMethodRS256,
+	})
+
+	// c := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"http://localhost:3000"},
+	// 	AllowCredentials: true,
+	// 	AllowedHeaders:   []string{"Authorization"},
+	// })
+	//
+
 	files, err := filepath.Glob("*")
 	if err != nil {
 		log.Fatal(err)
@@ -381,7 +476,13 @@ func main() {
 	//mux.HandleFunc("/drop", dropHandler)
 	mux.HandleFunc("/webhooks/jira", jiraHandler)
 	mux.HandleFunc("/webhooks/servicenow", servicenowHandler)
-	mux.HandleFunc("/api/users/", usersHandler)
+	//mux.HandleFunc("/api/users/", usersHandler)
+	//
+	mux.Handle("/api/users/", negroni.New(
+		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+		negroni.Wrap(http.HandlerFunc(usersHandler)),
+	))
+	//
 	mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
