@@ -4,6 +4,9 @@ RUN mkdir /app
 ADD . /app/ 
 WORKDIR /app 
 
+RUN go get -u "github.com/auth0/go-jwt-middleware"
+RUN go get -u "github.com/codegangsta/negroni"
+RUN go get -u "github.com/dgrijalva/jwt-go"
 
 RUN go get -u  "github.com/mongodb/mongo-go-driver/bson"
 ##RUN go get -u	"github.com/mongodb/mongo-go-driver/bson/objectid"
