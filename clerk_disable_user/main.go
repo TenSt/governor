@@ -109,7 +109,13 @@ func changeStatus(ticket *task, state string) {
 	}
 
 	t := bytes.NewReader(j)
-	resp, err := myClient.Post(urlUser, "application/json", t)
+
+	bearer := auth()
+	req, _ := http.NewRequest("POST", urlUser, t)
+	req.Header.Add("authorization", bearer)
+	req.Header.Add("contentType", "application/json")
+	resp, err := myClient.Do(req)
+	//resp, err := myClient.Post(urlUser, "application/json", t)
 	if err != nil {
 		fmt.Println("Error with POST request")
 	}
@@ -179,7 +185,6 @@ func auth() string {
 
 	token := (strings.Split(string(body), ":"))[1]
 	token = strings.Trim((strings.Split(token, ","))[0], "\"")
-	fmt.Println(token)
 	bearer := "Bearer " + token
 
 	return bearer
