@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	utils "github.com/governor-clerk-utils"
+	utils "github.com/verfio/governor-clerk-utils"
 )
 
 func main() {
