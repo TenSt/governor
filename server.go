@@ -26,6 +26,157 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
+type dns struct {
+	ID         objectid.ObjectID `json:"id" bson:"_id"`
+	Number     int64             `json:"number" bson:"number"`
+	Source     string            `json:"source" bson:"source"`
+	SourceID   string            `json:"sourceid" bson:"sourceid"`
+	Record     string            `json:"record" bson:"record"`
+	RecordType string            `json:"recordtype" bson:"recordtype"`
+	Zone       string            `json:"zone" bson:"zone"`
+	Target     string            `json:"target" bson:"target"`
+	Action     string            `json:"action" bson:"action"`
+	State      string            `json:"state" bson:"state"`
+	Email      string            `json:"email" bson:"email"`
+}
+
+//Read DNS API data from mongo
+func readDNS() []dns {
+	client, err := mongo.NewClient("mongodb://mongo:27017")
+	err = client.Connect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := client.Database("governor").Collection("dns")
+
+	cur, err := collection.Find(context.Background(), nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer cur.Close(context.Background())
+	var dnses []dns
+
+	//err = ioutil.WriteFile("tasks.html", []byte(r))
+
+	for cur.Next(context.Background()) {
+		d := dns{}
+		err := cur.Decode(&d)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dnses = append(dnses, d)
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Disconnect(context.Background())
+	//	log.Print(tasks)
+	return dnses
+
+}
+
+//write DNS API data to mongo
+func writeDNS(record string, recordtype string, zone string, target string, action string, email string, source string, sourceid string) {
+	client, err := mongo.NewClient("mongodb://mongo:27017")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = client.Connect(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := client.Database("governor").Collection("dns")
+
+	id, _ := collection.Count(context.Background(), nil)
+
+	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("record", record), bson.EC.String("recordtype", recordtype), bson.EC.String("zone", zone), bson.EC.String("target", target), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email), bson.EC.String("source", source), bson.EC.String("sourceid", sourceid))
+	_, err = collection.InsertOne(context.Background(), newItemDoc)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer client.Disconnect(context.Background())
+}
+
+//handle requests to /api/dns
+func dnsHandler(w http.ResponseWriter, r *http.Request) {
+
+	p := strings.Split(r.URL.Path, "/")
+	fmt.Println(p)
+	d := readDNS()
+
+	switch r.Method {
+
+	case "GET":
+		if p[3] != "" {
+			for _, dns := range d {
+				// var j []byte
+				id := `ObjectID("` + p[3] + `")`
+				if (dns.ID).String() == id {
+					j, err := json.Marshal(dns)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					w.Header().Set("Content-Type", "application/json")
+					w.Write(j)
+
+				}
+			}
+
+		} else {
+
+			j, err := json.Marshal(d)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(j)
+		}
+
+	case "POST":
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		log.Println(string(body))
+		var d dns
+		err = json.Unmarshal(body, &d)
+		if err != nil {
+			panic(err)
+		}
+		log.Println(d)
+
+		client, err := mongo.NewClient("mongodb://mongo:27017")
+		err = client.Connect(context.TODO())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		collection := client.Database("governor").Collection("dns")
+		doc, err := bson.Marshal(d)
+		filter := bson.NewDocument(bson.EC.ObjectID("_id", d.ID))
+
+		res, err := collection.ReplaceOne(context.Background(), filter, doc)
+		log.Println(res.UpsertedID)
+
+		if res.UpsertedID == nil {
+			writeDNS(d.Record, d.RecordType, d.Zone, d.Target, d.Action, d.Email, d.Source, d.SourceID)
+
+		}
+
+	default:
+	}
+}
 func getPemCert(token *jwt.Token) (string, error) {
 	cert := ""
 	resp, err := http.Get("https://verfio.auth0.com/.well-known/jwks.json")
@@ -145,7 +296,7 @@ func dropMongo() {
 
 	collection := client.Database("governor").Collection("tasks")
 
-	err = collection.Drop(context.Background(), nil)
+	err = collection.Drop(context.Background())
 
 	//defer client.Disconnect(nil)
 
@@ -484,6 +635,7 @@ func main() {
 	))
 	//
 	mux.HandleFunc("/tasks.html", tasksHandler)
+	mux.HandleFunc("/api/dns/", dnsHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 
