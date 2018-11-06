@@ -79,8 +79,8 @@ function IncludeHTML() {
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
 <script type="text/javascript">
-var auto_refresh = setInterval(
-	function(){$("#target").load("tasks.html").fadeIn("slow");}, 500);
+var auto_refresh = setInterval(	function(){$("#target").load("tasks.html").fadeIn("slow");}, 500);
+var auto_refresh = setInterval(	function(){$("#dns").load("dns.html").fadeIn("slow");}, 500);
 </script> 
 
 
@@ -112,11 +112,11 @@ var auto_refresh = setInterval(
 	<div class="row"></div>
 		
 	<div class="row">
-				<div class="one column" >
+				<!-- <div class="one column" >
 			
-				</div> 
+				</div>  -->
 				<div class="eleven columns" >
-						<input class="u-full-width" type="text" id="chat" size="100" placeholder="Example: please create user brian and send credentials to brian@moon.com"> 
+						<input class="u-full-width" type="text" id="chat" size="100" placeholder="Example: please create A record in zone verf.local with hostname gov and ip 10.0.0.1"> 
 		
 				
 						<button class="button" onClick="run();" id="runButton" disabled>Send</button>
@@ -132,7 +132,7 @@ var auto_refresh = setInterval(
 			<div class="one column">
 			
 				</div> 
-			<div class="eleven columns" id="tasks">
+			<div class="six columns" id="tasks">
 			
 				</div> 
 			
@@ -142,10 +142,16 @@ var auto_refresh = setInterval(
 	</div>
 
 	<div class="row">
-			<div class="one column" id="tasks">
+			<!-- <div class="one column" id="tasks">
 			
-				</div> 
-		<div class="eleven columns" id="target">
+				</div>  -->
+		<div class="five columns" id="target">
+			<!-- <script>
+				IncludeHTML();
+			</script> -->
+		</div>
+
+		<div class="six columns" id="dns">
 			<!-- <script>
 				IncludeHTML();
 			</script> -->

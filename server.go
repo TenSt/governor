@@ -259,6 +259,19 @@ func sortTasks(s []task) []task {
 	return s
 }
 
+func sortDNS(s []dns) []dns {
+
+	// fmt.Println(s)
+
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+
+	// fmt.Println(s)
+
+	return s
+}
+
 func mongoWrite(user string, action string, email string, source string, sourceid string) {
 	client, err := mongo.NewClient("mongodb://mongo:27017")
 	if err != nil {
@@ -306,6 +319,13 @@ func dropHandler(w http.ResponseWriter, r *http.Request) {
 
 	dropMongo()
 	parseTasks()
+
+}
+
+func dnsHTMLHandler(w http.ResponseWriter, r *http.Request) {
+
+	parseDNS()
+	http.ServeFile(w, r, "dns.html")
 
 }
 
@@ -516,6 +536,30 @@ func parseDescription(s string) (string, string, string) {
 	return u, a, e
 }
 
+func parseDNS() {
+	// parse template
+	tpl, err := template.ParseFiles("dns.gohtml")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// execute template
+	//tasks := readMongo()
+	dnses := readDNS()
+	dnses = sortDNS(dnses)
+
+	f, err := os.Create("dns.html")
+	if err != nil {
+		log.Println("create file: ", err)
+		return
+	}
+
+	err = tpl.Execute(f, dnses)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func parseTasks() {
 	// parse template
 	tpl, err := template.ParseFiles("tasks.gohtml")
@@ -635,6 +679,7 @@ func main() {
 	))
 	//
 	mux.HandleFunc("/tasks.html", tasksHandler)
+	mux.HandleFunc("/dns.html", dnsHTMLHandler)
 	mux.HandleFunc("/api/dns/", dnsHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))

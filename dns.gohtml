@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" http-equiv="refresh" content="10">
+</head> 
+    <title>Document</title>
+
+</head>
+<body>
+
+	<table class="u-full-width">
+	  <tr>
+    <!-- <th>#</th>
+    <th>Source</th>
+    <th>SourceID</th> -->
+    <th>Record</th>
+    <th>Type</th>
+    <th>Zone</th>
+    <th>Target</th>
+    <th>Action</th>
+    <th>State</th>
+  </tr>
+    {{ range . }}
+				<tr>
+		<!--			  <td>{{ .Number }}</td>	
+            <td>{{ .Source }}</td>
+            <td>{{ .SourceID }}</td> -->
+					  <td>{{ .Record }}</td>
+            <td>{{ .RecordType }}</td>
+            <td>{{ .Zone }}</td>
+            <td>{{ .Target }}</td>
+					  <td>{{ .Action }}</td> 
+					  
+                      <td>
+                      {{ if (eq .State  "active") }}
+                        <font color="navy"> {{ .State }}
+                      {{ else if (eq .State "error") }}
+                        <font color="red"> {{ .State }}
+                      {{ else }}
+                        <font color="teal">{{ .State }}
+                      {{ end }}
+                      </font>
+                      </td>
+				
+				</tr>
+    {{ end }}	
+	</table>
+
+</body>
+</html>
