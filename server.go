@@ -14,35 +14,37 @@ import (
 	"path/filepath"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/buger/jsonparser"
 
 	//"github.com/rs/xid"
 
-	"github.com/auth0/go-jwt-middleware"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/codegangsta/negroni"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/mongodb/mongo-go-driver/bson/objectid"
-	"github.com/mongodb/mongo-go-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type dns struct {
-	ID         objectid.ObjectID `json:"id" bson:"_id"`
-	Number     int64             `json:"number" bson:"number"`
-	Source     string            `json:"source" bson:"source"`
-	SourceID   string            `json:"sourceid" bson:"sourceid"`
-	Record     string            `json:"record" bson:"record"`
-	RecordType string            `json:"recordtype" bson:"recordtype"`
-	Zone       string            `json:"zone" bson:"zone"`
-	Target     string            `json:"target" bson:"target"`
-	Action     string            `json:"action" bson:"action"`
-	State      string            `json:"state" bson:"state"`
-	Email      string            `json:"email" bson:"email"`
+	ID         primitive.ObjectID `json:"id" bson:"_id"`
+	Number     int64              `json:"number" bson:"number"`
+	Source     string             `json:"source" bson:"source"`
+	SourceID   string             `json:"sourceid" bson:"sourceid"`
+	Record     string             `json:"record" bson:"record"`
+	RecordType string             `json:"recordtype" bson:"recordtype"`
+	Zone       string             `json:"zone" bson:"zone"`
+	Target     string             `json:"target" bson:"target"`
+	Action     string             `json:"action" bson:"action"`
+	State      string             `json:"state" bson:"state"`
+	Email      string             `json:"email" bson:"email"`
 }
 
 //Read DNS API data from mongo
 func readDNS() []dns {
-	client, err := mongo.NewClient("mongodb://mongo:27017")
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -82,7 +84,7 @@ func readDNS() []dns {
 
 //write DNS API data to mongo
 func writeDNS(record string, recordtype string, zone string, target string, action string, email string, source string, sourceid string) {
-	client, err := mongo.NewClient("mongodb://mongo:27017")
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,9 +95,20 @@ func writeDNS(record string, recordtype string, zone string, target string, acti
 
 	collection := client.Database("governor").Collection("dns")
 
-	id, _ := collection.Count(context.Background(), nil)
+	id, _ := collection.CountDocuments(context.Background(), nil)
 
-	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("record", record), bson.EC.String("recordtype", recordtype), bson.EC.String("zone", zone), bson.EC.String("target", target), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email), bson.EC.String("source", source), bson.EC.String("sourceid", sourceid))
+	newItemDoc := bson.D{
+		{"number", id + 1},
+		{"record", record},
+		{"recordtype", recordtype},
+		{"zone", zone},
+		{"target", target},
+		{"action", action},
+		{"state", "active"},
+		{"email", email},
+		{"source", source},
+		{"sourceid", sourceid},
+	}
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
 
 	if err != nil {
@@ -156,7 +169,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println(d)
 
-		client, err := mongo.NewClient("mongodb://mongo:27017")
+		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 		err = client.Connect(context.TODO())
 		if err != nil {
 			log.Fatal(err)
@@ -164,7 +177,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request) {
 
 		collection := client.Database("governor").Collection("dns")
 		doc, err := bson.Marshal(d)
-		filter := bson.NewDocument(bson.EC.ObjectID("_id", d.ID))
+		filter := bson.D{{"_id", d.ID}}
 
 		res, err := collection.ReplaceOne(context.Background(), filter, doc)
 		log.Println(res.UpsertedID)
@@ -193,7 +206,7 @@ func getPemCert(token *jwt.Token) (string, error) {
 		return cert, err
 	}
 
-	for k, _ := range jwks.Keys {
+	for k := range jwks.Keys {
 		if token.Header["kid"] == jwks.Keys[k].Kid {
 			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
 		}
@@ -236,14 +249,14 @@ type JSONWebKeys struct {
 // Task is task
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
-	ID       objectid.ObjectID `json:"id" bson:"_id"`
-	Number   int64             `json:"number" bson:"number"`
-	Source   string            `json:"source" bson:"source"`
-	SourceID string            `json:"sourceid" bson:"sourceid"`
-	User     string            `json:"user" bson:"user"`
-	Action   string            `json:"action" bson:"action"`
-	State    string            `json:"state" bson:"state"`
-	Email    string            `json:"email" bson:"email"`
+	ID       primitive.ObjectID `json:"id" bson:"_id"`
+	Number   int64              `json:"number" bson:"number"`
+	Source   string             `json:"source" bson:"source"`
+	SourceID string             `json:"sourceid" bson:"sourceid"`
+	User     string             `json:"user" bson:"user"`
+	Action   string             `json:"action" bson:"action"`
+	State    string             `json:"state" bson:"state"`
+	Email    string             `json:"email" bson:"email"`
 }
 
 func sortTasks(s []task) []task {
@@ -273,7 +286,7 @@ func sortDNS(s []dns) []dns {
 }
 
 func mongoWrite(user string, action string, email string, source string, sourceid string) {
-	client, err := mongo.NewClient("mongodb://mongo:27017")
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -284,9 +297,18 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 
 	collection := client.Database("governor").Collection("tasks")
 
-	id, _ := collection.Count(context.Background(), nil)
+	id, _ := collection.CountDocuments(context.Background(), nil)
 
-	newItemDoc := bson.NewDocument(bson.EC.Int64("number", id+1), bson.EC.String("user", user), bson.EC.String("action", action), bson.EC.String("state", "active"), bson.EC.String("email", email), bson.EC.String("source", source), bson.EC.String("sourceid", sourceid))
+	newItemDoc := bson.D{
+		{"number", id + 1},
+		{"user", user},
+		{"action", action},
+		{"state", "active"},
+		{"email", email},
+		{"source", source},
+		{"sourceid", sourceid},
+	}
+
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
 
 	if err != nil {
@@ -301,7 +323,7 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 }
 
 func dropMongo() {
-	client, err := mongo.NewClient("mongodb://mongo:27017")
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -444,7 +466,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println(t)
 
-		client, err := mongo.NewClient("mongodb://mongo:27017")
+		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 		err = client.Connect(context.TODO())
 		if err != nil {
 			log.Fatal(err)
@@ -452,7 +474,8 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 
 		collection := client.Database("governor").Collection("tasks")
 		doc, err := bson.Marshal(t)
-		filter := bson.NewDocument(bson.EC.ObjectID("_id", t.ID))
+		filter := bson.D{{"_id", t.ID}}
+
 		_, err = collection.ReplaceOne(context.Background(), filter, doc)
 
 	default:
@@ -461,7 +484,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func readMongo() []task {
-	client, err := mongo.NewClient("mongodb://mongo:27017")
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
