@@ -14,16 +14,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"github.com/buger/jsonparser"
-
-	//"github.com/rs/xid"
-
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/buger/jsonparser"
 	"github.com/codegangsta/negroni"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

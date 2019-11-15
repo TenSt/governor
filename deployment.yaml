@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: governor
-        image: verfio/governor
+        image: IMG
         imagePullPolicy: Always
 ---
 apiVersion: v1
