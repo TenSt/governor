@@ -26,7 +26,7 @@ import (
 
 type dns struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id"`
-	Number     int64              `json:"number" bson:"number"`
+	Number     string             `json:"number" bson:"number"`
 	Source     string             `json:"source" bson:"source"`
 	SourceID   string             `json:"sourceid" bson:"sourceid"`
 	Record     string             `json:"record" bson:"record"`
@@ -48,7 +48,7 @@ func readDNS() []dns {
 
 	collection := client.Database("governor").Collection("dns")
 
-	cur, err := collection.Find(context.Background(), nil)
+	cur, err := collection.Find(context.Background(), bson.D{})
 
 	if err != nil {
 		log.Fatal(err)
@@ -91,7 +91,7 @@ func writeDNS(record string, recordtype string, zone string, target string, acti
 
 	collection := client.Database("governor").Collection("dns")
 
-	id, _ := collection.CountDocuments(context.Background(), nil)
+	id, _ := collection.CountDocuments(context.Background(), bson.D{})
 
 	newItemDoc := bson.D{
 		{"number", id + 1},
@@ -246,7 +246,7 @@ type JSONWebKeys struct {
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
 	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	Number   int64              `json:"number" bson:"number"`
+	Number   string             `json:"number" bson:"number"`
 	Source   string             `json:"source" bson:"source"`
 	SourceID string             `json:"sourceid" bson:"sourceid"`
 	User     string             `json:"user" bson:"user"`
@@ -293,7 +293,7 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 
 	collection := client.Database("governor").Collection("tasks")
 
-	id, _ := collection.CountDocuments(context.Background(), nil)
+	id, _ := collection.CountDocuments(context.Background(), bson.D{})
 
 	newItemDoc := bson.D{
 		{"number", id + 1},
@@ -489,7 +489,7 @@ func readMongo() []task {
 
 	collection := client.Database("governor").Collection("tasks")
 
-	cur, err := collection.Find(context.Background(), nil)
+	cur, err := collection.Find(context.Background(), bson.D{})
 
 	if err != nil {
 		log.Println("Error on finding document in collection for tasks")
