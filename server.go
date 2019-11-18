@@ -40,7 +40,7 @@ type dns struct {
 
 //Read DNS API data from mongo
 func readDNS() []dns {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func readDNS() []dns {
 
 //write DNS API data to mongo
 func writeDNS(record string, recordtype string, zone string, target string, action string, email string, source string, sourceid string) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,7 +165,7 @@ func dnsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println(d)
 
-		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 		err = client.Connect(context.TODO())
 		if err != nil {
 			log.Fatal(err)
@@ -282,7 +282,7 @@ func sortDNS(s []dns) []dns {
 }
 
 func mongoWrite(user string, action string, email string, source string, sourceid string) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -319,7 +319,7 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 }
 
 func dropMongo() {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -462,7 +462,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println(t)
 
-		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+		client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 		err = client.Connect(context.TODO())
 		if err != nil {
 			log.Fatal(err)
@@ -480,7 +480,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func readMongo() []task {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo-0.mongo:27017"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
