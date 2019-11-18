@@ -483,6 +483,7 @@ func readMongo() []task {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	err = client.Connect(context.TODO())
 	if err != nil {
+		log.Println("Error on connecting to mongo-db for tasks")
 		log.Fatal(err)
 	}
 
@@ -491,6 +492,7 @@ func readMongo() []task {
 	cur, err := collection.Find(context.Background(), nil)
 
 	if err != nil {
+		log.Println("Error on finding document in collection for tasks")
 		log.Fatal(err)
 	}
 
@@ -583,6 +585,7 @@ func parseTasks() {
 	// parse template
 	tpl, err := template.ParseFiles("tasks.gohtml")
 	if err != nil {
+		log.Println("Error on parseTasks func")
 		log.Fatalln(err)
 	}
 
@@ -607,6 +610,8 @@ func wasmHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
+		log.Println("Method is:\t" + r.Method)
+		log.Println("Request URL is:\t" + r.RequestURI)
 		parseTasks()
 		http.ServeFile(w, r, "index.html")
 	case "POST":
