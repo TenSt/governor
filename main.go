@@ -100,13 +100,13 @@ func main() {
 		url.Values{
 			"user":     {"governor"},
 			"action":   {a},
-			"email":    "stepan.maks@gmail.com",
+			"email":    {"stepan.maks@gmail.com"},
 			"source":   {"governor"},
 			"sourceid": {c}})
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger.Print("new task is ready, user: " + u + ", action: " + a + ", email: " + e)
+	// logger.Print("new task is ready, user: " + u + ", action: " + a + ", email: " + e)
 }
 
 func predict(str string) string {
