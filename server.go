@@ -20,7 +20,6 @@ import (
 
 // Task is task
 type task struct {
-	//ID     bson.ObjectID `bson:"_id,omitempty"`
 	ID       primitive.ObjectID `json:"id" bson:"_id"`
 	Number   string             `json:"number" bson:"number"`
 	Source   string             `json:"source" bson:"source"`
@@ -30,6 +29,14 @@ type task struct {
 	State    string             `json:"state" bson:"state"`
 	Email    string             `json:"email" bson:"email"`
 	Request  string             `json:"request" bson:"request"`
+}
+
+type request struct {
+	Source   string `json:"source"`
+	SourceID string `json:"sourceid"`
+	User     string `json:"user"`
+	Email    string `json:"email"`
+	Request  string `json:"request"`
 }
 
 type predictions struct {
@@ -157,10 +164,12 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		log.Println("Request URL is:\t" + r.RequestURI)
 
 		body, err := ioutil.ReadAll(r.Body)
-		var t task
+		var t request
 		err = json.Unmarshal(body, &t)
 		if err != nil {
+			log.Println("tasks: error unmarshaling request")
 			fmt.Println(err)
+			return
 		}
 		action := predict(t.Request)
 		if t.Source == "" {
