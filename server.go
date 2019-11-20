@@ -28,6 +28,7 @@ type task struct {
 	Action   string             `json:"action" bson:"action"`
 	State    string             `json:"state" bson:"state"`
 	Email    string             `json:"email" bson:"email"`
+	Request  string             `json:"request" bson:"request"`
 }
 
 type predictions struct {
@@ -49,7 +50,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
 
-func mongoWrite(user string, action string, email string, source string, sourceid string) {
+func mongoWrite(user string, action string, email string, source string, sourceid string, request string) {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		log.Fatal(err)
@@ -71,6 +72,7 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 		primitive.E{Key: "email", Value: email},
 		primitive.E{Key: "source", Value: source},
 		primitive.E{Key: "sourceid", Value: sourceid},
+		primitive.E{Key: "request", Value: request},
 	}
 
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
@@ -146,7 +148,23 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		log.Println("Method is:\t" + r.Method)
 		log.Println("Request URL is:\t" + r.RequestURI)
 
-		// mongoWrite(u, a, e, s, si)
+		body, err := ioutil.ReadAll(r.Body)
+		var t task
+		err = json.Unmarshal(body, &t)
+		if err != nil {
+			fmt.Println(err)
+		}
+		action := predict(t.Request)
+		if t.Source == "" {
+			t.Source = "governor"
+		}
+		if t.SourceID == "" {
+			t.Source = "-"
+		}
+		if t.Email == "" {
+			t.Source = "-"
+		}
+		mongoWrite(t.User, action, t.Email, t.Source, t.SourceID, t.Request)
 
 	default:
 		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
