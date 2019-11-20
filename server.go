@@ -21,7 +21,7 @@ import (
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
 	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	Number   string             `json:"number" bson:"number"`
+	Number   int64              `json:"number" bson:"number"`
 	Source   string             `json:"source" bson:"source"`
 	SourceID string             `json:"sourceid" bson:"sourceid"`
 	User     string             `json:"user" bson:"user"`
@@ -45,7 +45,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 	mux.HandleFunc("/tasks", tasks)
-	// mux.HandleFunc("/tasks.html", tasksHandler)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
@@ -53,11 +52,15 @@ func main() {
 func mongoWrite(user string, action string, email string, source string, sourceid string, request string) {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
-		log.Fatal(err)
+		log.Println("mongoWrite: error creating new client")
+		log.Println(err)
+		return
 	}
 	err = client.Connect(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		log.Println("mongoWrite: Error on connecting to mongo-db")
+		log.Println(err)
+		return
 	}
 
 	collection := client.Database("governor").Collection("tasks")
@@ -76,23 +79,27 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 	}
 
 	_, err = collection.InsertOne(context.Background(), newItemDoc)
-
 	if err != nil {
-		log.Fatal(err)
+		log.Println("mongoWrite: error inserting new document")
+		log.Println(err)
+		return
 	}
 
 	defer client.Disconnect(context.Background())
-
-	// id := res.InsertedID
-	// log.Printf(id.(string))
 }
 
 func mongoRead() []task {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://mongo:27017"))
+	if err != nil {
+		log.Println("mongoRead: error creating new client")
+		log.Println(err)
+		return nil
+	}
 	err = client.Connect(context.TODO())
 	if err != nil {
-		log.Println("Error on connecting to mongo-db for tasks")
+		log.Println("mongoRead: Error on connecting to mongo-db")
 		log.Println(err)
+		return nil
 	}
 
 	collection := client.Database("governor").Collection("tasks")
@@ -100,8 +107,9 @@ func mongoRead() []task {
 	cur, err := collection.Find(context.Background(), bson.D{})
 
 	if err != nil {
-		log.Println("Error on finding document in collection for tasks")
+		log.Println("mongoRead: Error on finding documents in collection")
 		log.Println(err)
+		return nil
 	}
 
 	defer cur.Close(context.Background())
@@ -113,14 +121,15 @@ func mongoRead() []task {
 		t := task{}
 		err := cur.Decode(&t)
 		if err != nil {
-			log.Println("Error decoding document")
+			log.Println("mongoRead: Error decoding document")
 			log.Println(err)
 		}
 
 		tasks = append(tasks, t)
 	}
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Println("mongoRead: Error with the cursor")
+		log.Println(err)
 	}
 
 	defer client.Disconnect(context.Background())
@@ -164,6 +173,8 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		if t.Email == "" {
 			t.Source = "-"
 		}
+		fmt.Println("New task:\n", t)
+		fmt.Println("Predition is:", action)
 		mongoWrite(t.User, action, t.Email, t.Source, t.SourceID, t.Request)
 
 	default:
