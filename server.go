@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +22,7 @@ import (
 type task struct {
 	//ID     bson.ObjectID `bson:"_id,omitempty"`
 	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	Number   int64              `json:"number" bson:"number"`
+	Number   string             `json:"number" bson:"number"`
 	Source   string             `json:"source" bson:"source"`
 	SourceID string             `json:"sourceid" bson:"sourceid"`
 	User     string             `json:"user" bson:"user"`
@@ -68,7 +69,7 @@ func mongoWrite(user string, action string, email string, source string, sourcei
 	id, _ := collection.CountDocuments(context.Background(), bson.D{})
 
 	newItemDoc := bson.D{
-		primitive.E{Key: "number", Value: id + 1},
+		primitive.E{Key: "number", Value: strconv.Itoa(int(id) + 1)},
 		primitive.E{Key: "user", Value: user},
 		primitive.E{Key: "action", Value: action},
 		primitive.E{Key: "state", Value: "active"},
@@ -114,8 +115,6 @@ func mongoRead() []task {
 
 	defer cur.Close(context.Background())
 	var tasks []task
-
-	//err = ioutil.WriteFile("tasks.html", []byte(r))
 
 	for cur.Next(context.Background()) {
 		t := task{}
