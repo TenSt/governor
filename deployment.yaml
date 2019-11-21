@@ -22,7 +22,9 @@ spec:
       - name: governor
         image: IMG
         imagePullPolicy: Always
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -40,4 +42,6 @@ spec:
   selector:
     app: governor
   sessionAffinity: None
-  type: LoadBalancer
+  type: ClusterIP
+
+---
