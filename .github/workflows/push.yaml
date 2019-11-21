@@ -40,5 +40,7 @@ jobs:
         cat ./deployment.yaml
     - name: Deploy to K8S
       run: |
+        kubectl apply -f mongo.yaml
+        kubectl apply -f ingress.yaml
         kubectl apply -f deployment.yaml
     
