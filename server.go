@@ -51,8 +51,8 @@ func main() {
 	fmt.Println(files) // contains a list of all files in the current directory
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir(".")))
-	mux.HandleFunc("/tasks", tasks)
+	//mux.Handle("/", http.FileServer(http.Dir(".")))
+	mux.HandleFunc("/backend/tasks", tasks)
 	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
